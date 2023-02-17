@@ -3,36 +3,15 @@ import os
 
 import pandas as pd
 import boto3
-
-
+from pypgrest import Postgrest
 # AWS Credentials
 AWS_ACCESS_ID = os.getenv("BOND_AWS_ID")
 AWS_PASS = os.getenv("BOND_AWS_SECRET")
 BUCKET = os.getenv("BOND_BUCKET")
 
-## CSV Endpoints
-# Microstrategy
-# 2020 Bond Expenses Obligated.csv
-BOND_2020_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/2020+Bond+Expenses+Obligated.csv"
-# All bonds Expenses Obligated.csv
-ALL_BONDS_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/All+bonds+Expenses+Obligated.csv"
-
-# Google Docs:
-# AIMS to Dashboard ID Lookup table
-AIMS_DASHBOARD = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=202806724&single=true&output=csv"
-# Baseline Spend data
-BASELINE_SPEND = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?output=csv"
-# Current FY Spend Plan
-CY_SPEND_PLAN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=1856896414&single=true&output=csv"
-# Previous FY Spend Plan
-PY_SPEND_PLAN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=1042748786&single=true&output=csv"
-# Dashboard Appropriation for all bonds
-APPRO_DATA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=20835862&single=true&output=csv"
-# All bonds DeptFundProgAct lookup table
-DEPTFUNDPROGACT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=1889713154&single=true&output=csv"
-# All bonds AIMS to dashboard ID lookup table
-AIMS_ALL_BONDS_DASHBOARD = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=811620554&single=true&output=csv"
-
+# Postgest Credentials
+POSTGREST_ENDPOINT = os.getenv("POSTGREST_ENDPOINT")
+POSTGREST_TOKEN = os.getenv("POSTGREST_TOKEN")
 
 # Used for converting numeric months into sortable strings in Power BI
 MONTH_NAMES = {
@@ -49,6 +28,23 @@ MONTH_NAMES = {
     11: "11",
     12: "12",
 }
+
+def get_data(client, table):
+    """
+
+    Parameters
+    ----------
+    client - Postgrest client
+    table - Name of the table in the Postgrest database
+
+    Returns
+    -------
+    A pandas dataframe of the whole table
+
+    """
+    params = {"select": "*", "order": "updated_at"}
+    res = client.select(resource=table, params=params)
+    return pd.DataFrame(res)
 
 
 def df_to_s3(df, resource, filename, index):
@@ -90,35 +86,35 @@ def expenses_obligated(df):
     """
 
     # Lookup column we use is a concatenation of a few fields
-    df["AIMS DeptFundProgAct"] = (
-        df["Department"].astype(str) + df["Fund"] + df["Division"] + df["Group"]
+    df["aims_dept_prog_act"] = (
+        df["department"].astype(str) + df["fund"] + df["division"] + df["group"]
     )
 
     # Here, we are creating new rows in this dataset for the missing rows
     # One row per FY, date, and AIMS DeptFundProgAct
     # If we don't do this then the cumulative totals when summed will not be correct
-    fys = df["Fiscal Year"].unique()
+    fys = df["fiscal_year"].unique()
     # Current fiscal year is determined based in the latest in our data
     curr_year = fys.max()
 
-    dates = df["Date"].unique()
-    groups = df["AIMS DeptFundProgAct"].unique()
+    dates = df["date"].unique()
+    groups = df["aims_dept_prog_act"].unique()
     new_rows = []
 
     for fy in fys:
         for date in dates:
             for group in groups:
                 if group not in list(
-                    df[(df["Date"] == date) & (df["Fiscal Year"] == fy)][
-                        "AIMS DeptFundProgAct"
+                    df[(df["date"] == date) & (df["fiscal_year"] == fy)][
+                        "aims_dept_prog_act"
                     ]
                 ):
                     row = {
-                        "Fiscal Year": fy,
-                        "AIMS DeptFundProgAct": group,
-                        "Date": date,
-                        "Expenses": 0,
-                        "Obligated": 0,
+                        "fiscal_year": fy,
+                        "aims_dept_prog_act": group,
+                        "date": date,
+                        "expenses": 0,
+                        "obligated": 0,
                     }
                     new_rows.append(row)
 
@@ -126,63 +122,63 @@ def expenses_obligated(df):
     df = pd.concat([df, new_rows], ignore_index=True)
 
     # Creating datetime index and sorting ascending by that
-    df["datetime"] = pd.to_datetime(df["Date"])
+    df["datetime"] = pd.to_datetime(df["date"])
     df = df.set_index("datetime")
     df = df.sort_index()
 
     # Cumulative sum is what is plotted in Power BI, we create a rolling total
     # for each AIMS DeptFundProgAct and FY
-    df["sum_obligated"] = df.groupby(["AIMS DeptFundProgAct", "Fiscal Year"])[
-        "Obligated"
+    df["sum_obligated"] = df.groupby(["aims_dept_prog_act", "fiscal_year"])[
+        "obligated"
     ].cumsum()
 
-    df["sum_expenses"] = df.groupby(["AIMS DeptFundProgAct", "Fiscal Year"])[
-        "Expenses"
+    df["sum_expenses"] = df.groupby(["aims_dept_prog_act", "fiscal_year"])[
+        "expenses"
     ].cumsum()
 
     # Export two versions, one for current FY and one for previous FY
-    pdf = df[df["Fiscal Year"] < curr_year]
+    pdf = df[df["fiscal_year"] < curr_year]
 
     return df, pdf
 
 
 def all_bond_expenses_obligated(df, app):
     # Lookup column we use is a concatenation of a few fields
-    df["AIMS DeptFundProgAct"] = (
-        df["Department@Dept"].astype(str)
-        + df["Fund@Code"]
-        + df["Division (As-Is)@Code"]
-        + df["Group (As-Is)@Code"]
+    df["aims_dept_prog_act"] = (
+        df["department"].astype(str)
+        + df["fund_code"]
+        + df["division_code"]
+        + df["group_code"]
     )
 
     # Here, we are creating new rows in this dataset for the missing rows
     # One row per date and AIMS DeptFundProgAct
     # If we don't do this then the cumulative totals when summed will not be correct
 
-    dates = df["Date"].unique()
+    dates = df["date"].unique()
     dates = pd.DataFrame(dates)
-    dates = dates.rename(columns={0: "Date"})
+    dates = dates.rename(columns={0: "date"})
 
-    groups = df["AIMS DeptFundProgAct"].unique()
+    groups = df["aims_dept_prog_act"].unique()
     groups = pd.DataFrame(groups)
-    groups = groups.rename(columns={0: "AIMS DeptFundProgAct"})
+    groups = groups.rename(columns={0: "aims_dept_prog_act"})
 
     new_rows = dates.merge(groups, how="cross")
-    new_rows["Expenses"] = 0
-    new_rows["Obligated"] = 0
+    new_rows["expenses"] = 0
+    new_rows["obligated"] = 0
     df = pd.concat([df, new_rows], ignore_index=True)
-    df = df.drop_duplicates(subset=["AIMS DeptFundProgAct", "Date"], keep="first")
+    df = df.drop_duplicates(subset=["aims_dept_prog_act", "date"], keep="first")
 
     # Creating datetime index and sorting ascending by that
-    df["datetime"] = pd.to_datetime(df["Date"])
+    df["datetime"] = pd.to_datetime(df["date"])
     df = df.set_index("datetime")
     df = df.sort_index()
 
     # Cumulative sum is what is plotted in Power BI, we create a rolling total
     # for each AIMS DeptFundProgAct and FY
-    df["sum_obligated"] = df.groupby(["AIMS DeptFundProgAct"])["Obligated"].cumsum()
+    df["sum_obligated"] = df.groupby(["aims_dept_prog_act"])["obligated"].cumsum()
 
-    df["sum_expenses"] = df.groupby(["AIMS DeptFundProgAct"])["Expenses"].cumsum()
+    df["sum_expenses"] = df.groupby(["aims_dept_prog_act"])["expenses"].cumsum()
 
     return df
 
@@ -204,26 +200,23 @@ def group_table(row, fiscal_year):
     return f"0FY {str(row['group'][3])[2:4]}"
 
 
-def summarize_expenses(df,fy):
+def summarize_expenses(df, fy, client):
 
     # Need to convert from DeptFundProgAct to Dashboard DeptFundProgAct first
     # AIMS -> Dashboard ID lookup table
-    xwalk = pd.read_csv(AIMS_DASHBOARD)
-    xwalk = xwalk.rename(columns={"AIMS Dept Prog Act": "AIMS DeptFundProgAct"})
+    xwalk = get_data(client, "bond_2020_aims_to_dashboard")
+    #xwalk = xwalk.rename(columns={"AIMS Dept Prog Act": "AIMS DeptFundProgAct"})
 
-    df = pd.merge(df, xwalk, on="AIMS DeptFundProgAct", how="left")
+    df = pd.merge(df, xwalk, on="aims_dept_prog_act", how="left")
 
     # Setting datetime index again
-    df["datetime"] = pd.to_datetime(df["Date"])
+    df["datetime"] = pd.to_datetime(df["date"])
     df = df.set_index("datetime")
     df = df.sort_index()
 
-    # We are going to summarize based on the max fiscal year
-    #fy = df["Fiscal Year"].max()
-
     # Summarizing our expenses data by year, month, Dashboard DeptFundProgAct, and FY
     df = df.groupby(
-        [df.index.year, df.index.month, "Dashboard DeptFundProgAct", "Fiscal Year"]
+        [df.index.year, df.index.month, "dashboard_deptfundprogact", "fiscal_year"]
     ).sum()
 
     # Creates a group column that allows us to access it inside other functions
@@ -240,74 +233,75 @@ def summarize_expenses(df,fy):
 
 # don't have to worry about the fiscal year in this function
 def group_plans(row, fiscal_year):
-    if row["Fiscal Year"] == fiscal_year:
+    if row["fiscal_year"] == fiscal_year:
         return f"{row['group'][0]} {MONTH_NAMES[row['group'][1]]}"
-    return f"0FY {str(row['Fiscal Year'])[2:4]}"
+    return f"0FY {str(row['fiscal_year'])[2:4]}"
 
-def determine_fy():
+def determine_fy(client):
     # Looks at the current year spend plan and returns the maximum fiscal year
-    df = pd.read_csv(CY_SPEND_PLAN)
-    df["datetime"] = pd.to_datetime(df["Date"])
+    df = get_data(client, "bond_2020_current_fy_spend_plan")
+    df["datetime"] = pd.to_datetime(df["date"])
     df = df.set_index("datetime")
     df = df.sort_index()
 
-    df = df.groupby([df.index.year, df.index.month, "Dashboard DeptFundProgAct"]).sum()
+    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum()
 
     df["group"] = df.index.to_series()
 
-    df["Fiscal Year"] = df.apply(fiscal_year, axis=1)
-    return df["Fiscal Year"].max()
+    df["fiscal_year"] = df.apply(fiscal_year, axis=1)
+    return df["fiscal_year"].max()
 
 
-def summarize_plans(file, fy):
-    df = pd.read_csv(file)
+def summarize_plans(file, fy, client):
+    df = get_data(client, file)
 
-    df["datetime"] = pd.to_datetime(df["Date"])
+    df["datetime"] = pd.to_datetime(df["date"])
     df = df.set_index("datetime")
     df = df.sort_index()
 
-    df = df.groupby([df.index.year, df.index.month, "Dashboard DeptFundProgAct"]).sum()
+    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum()
 
     df["group"] = df.index.to_series()
 
-    df["Fiscal Year"] = df.apply(fiscal_year, axis=1)
+    df["fiscal_year"] = df.apply(fiscal_year, axis=1)
 
     df["table_col"] = df.apply(group_plans, fiscal_year=fy, axis=1)
-    df = df.groupby(["table_col", "Dashboard DeptFundProgAct"]).sum()
+    df = df.groupby(["table_col", "dashboard_deptfundprogact"]).sum()
     return df
 
-def summary_table(expenses, fiscal_year):
+def summary_table(expenses, fiscal_year,client):
     dfs = []
     for i in range(-1, 1):
         fy = fiscal_year + i
         if i == -1:
-            spend_plan = PY_SPEND_PLAN
+            spend_plan = "bond_2020_previous_fy_spend_plan"
         else:
-            spend_plan = CY_SPEND_PLAN
+            spend_plan = "bond_2020_current_fy_spend_plan"
 
-        expenses_summary = summarize_expenses(expenses, fy)
-        expenses_summary = expenses_summary.groupby(["table_col", "Dashboard DeptFundProgAct"]).sum()
+        expenses_summary = summarize_expenses(expenses, fy, client)
+        expenses_summary = expenses_summary.groupby(["table_col", "dashboard_deptfundprogact"]).sum()
+        expenses_summary = expenses_summary.rename(columns={"expenses": "Expenses"})
 
-        baseline_summary = summarize_plans(BASELINE_SPEND, fy)
-        baseline_summary = baseline_summary.rename(columns={"Amount": "Baseline"})
+        baseline_summary = summarize_plans("bond_2020_baseline_spend", fy, client)
+        baseline_summary = baseline_summary.rename(columns={"amount": "Baseline"})
 
-        spend_summary = summarize_plans(spend_plan, fy)
-        spend_summary = spend_summary.rename(columns={"Amount": "Planned"})
+        spend_summary = summarize_plans(spend_plan, fy, client)
+        spend_summary = spend_summary.rename(columns={"amount": "Planned"})
 
-        output = baseline_summary.join(expenses_summary, lsuffix="_x", rsuffix="_y")
+        output = baseline_summary.join(expenses_summary, lsuffix="_x", rsuffix="_y",how='outer')
         output = output.join(spend_summary, lsuffix="_x", rsuffix="_y")
 
         output = output[["Expenses", "Baseline", "Planned"]]
         if i == -1:
             output = output[output.index.get_level_values('table_col') != f"0FY {fiscal_year - 2000}"]
 
-        output["Sum_expenses"] = output.groupby(["Dashboard DeptFundProgAct"])[
+        output["Sum_expenses"] = output.groupby(["dashboard_deptfundprogact"])[
             "Expenses"
         ].cumsum()
-        output["Sum_baseline"] = output.groupby(["Dashboard DeptFundProgAct"])[
+        output["Sum_baseline"] = output.groupby(["dashboard_deptfundprogact"])[
             "Baseline"
         ].cumsum()
-        output["Sum_planned"] = output.groupby(["Dashboard DeptFundProgAct"])[
+        output["Sum_planned"] = output.groupby(["dashboard_deptfundprogact"])[
             "Planned"
         ].cumsum()
 
@@ -319,13 +313,19 @@ def summary_table(expenses, fiscal_year):
 
 
 def main():
+    client = Postgrest(
+        POSTGREST_ENDPOINT,
+        token=POSTGREST_TOKEN,
+        headers={"Prefer": "return=representation"},
+    )
+
     # Data from Microstrategy is in S3
     # 2020 Bond Expenses Obligated.csv
-    bond_data_2020 = pd.read_csv(BOND_2020_EXP)
+    bond_data_2020 = get_data(client, "expenses_obligated_2020_bond_raw")
     bond_data_2020, py_bond_data_2020 = expenses_obligated(bond_data_2020)
 
-    all_bond_data = pd.read_csv(ALL_BONDS_EXP)
-    app = pd.read_csv(APPRO_DATA)
+    all_bond_data =  get_data(client,"expenses_obligated_all_bonds_raw")
+    app = get_data(client, "all_bonds_appropriations")
 
     all_bond_data = all_bond_expenses_obligated(all_bond_data, app)
 
@@ -337,9 +337,9 @@ def main():
     df_to_s3(py_bond_data_2020, s3_resource, "prev_fyear_obligated_expenses", False)
     df_to_s3(all_bond_data, s3_resource, "all_bonds_obligation_expenses", False)
 
-    fy = determine_fy()
+    fy = determine_fy(client)
 
-    py_summary, cy_summary = summary_table(bond_data_2020, fy)
+    py_summary, cy_summary = summary_table(bond_data_2020, fy, client)
     df_to_s3(cy_summary, s3_resource, "curr_year_table", True)
     df_to_s3(py_summary, s3_resource, "prev_year_table", True)
 
