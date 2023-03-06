@@ -5,8 +5,8 @@ CREATE TABLE api.expenses_obligated_2020_bond_raw (
   "group" text,
   "fiscal_year" int,
   "division" text,
-  "obligated" real,
-  "expenses" real,
+  "obligated" numeric,
+  "expenses" numeric,
   "updated_at" timestamp
 );
 
@@ -20,29 +20,29 @@ CREATE TABLE api.expenses_obligated_all_bonds_raw (
   "date" date,
   "group_code" text,
   "group_long_name" text,
-  "obligated" real,
-  "expenses" real,
+  "obligated" numeric,
+  "expenses" numeric,
   "updated_at" timestamp
 );
 
 CREATE TABLE api.bond_2020_baseline_spend (
   "dashboard_deptfundprogact" text,
   "date" date,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 
 CREATE TABLE api.bond_2020_current_fy_spend_plan (
   "dashboard_deptfundprogact" text,
   "date" date,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 
 CREATE TABLE api.bond_2020_previous_fy_spend_plan (
   "dashboard_deptfundprogact" text,
   "date" date,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 
@@ -52,7 +52,7 @@ CREATE TABLE api.bond_2020_program_names (
   "bond_year" int,
   "program_name" text,
   "sub_program_name" text,
-  "funding_amount" real,
+  "funding_amount" numeric,
   "program_sort" int,
   "sub_program_sort" int,
   "updated_at" timestamp
@@ -68,21 +68,21 @@ CREATE TABLE api.bond_2020_aims_to_dashboard (
 CREATE TABLE api.all_bonds_baseline_spend (
   "dashboard_deptfundprogact" text,
   "date" date,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 
 CREATE TABLE api.all_bonds_spend_plan (
   "dashboard_deptfundprogact" text,
   "fiscal_year" int,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 
 CREATE TABLE api.all_bonds_appropriations (
   "dashboard_deptfundprogact" text,
   "date" date,
-  "amount" real,
+  "amount" numeric,
   "updated_at" timestamp
 );
 

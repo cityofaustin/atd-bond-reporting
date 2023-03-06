@@ -54,7 +54,7 @@ def validate_schema(df, schema):
 
 def to_postgres(client, df, table):
     # Creating updated_at column
-    time = pd.to_datetime("now")
+    time = pd.to_datetime("now",utc=True)
     df["updated_at"] = str(time)
 
     # Send df to database

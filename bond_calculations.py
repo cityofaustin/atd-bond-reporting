@@ -2,16 +2,20 @@ from io import StringIO
 import os
 
 import pandas as pd
-import boto3
 from pypgrest import Postgrest
-# AWS Credentials
-AWS_ACCESS_ID = os.getenv("BOND_AWS_ID")
-AWS_PASS = os.getenv("BOND_AWS_SECRET")
-BUCKET = os.getenv("BOND_BUCKET")
+from sodapy import Socrata
+import numpy as np
 
 # Postgest Credentials
 POSTGREST_ENDPOINT = os.getenv("POSTGREST_ENDPOINT")
 POSTGREST_TOKEN = os.getenv("POSTGREST_TOKEN")
+
+# Socrata Data Portal Credentials
+SO_WEB = os.getenv("SO_WEB")
+SO_TOKEN = os.getenv("SO_TOKEN")
+SO_KEY = os.getenv("SO_KEY")
+SO_SECRET = os.getenv("SO_SECRET")
+DATE_FORMAT_SOCRATA = "%Y-%m-%dT00:00:00.000"
 
 # Used for converting numeric months into sortable strings in Power BI
 MONTH_NAMES = {
@@ -45,25 +49,6 @@ def get_data(client, table):
     params = {"select": "*", "order": "updated_at"}
     res = client.select(resource=table, params=params)
     return pd.DataFrame(res)
-
-
-def df_to_s3(df, resource, filename, index):
-    """
-    Send pandas dataframe to an S3 bucket as a CSV
-    h/t https://stackoverflow.com/questions/38154040/save-dataframe-to-csv-directly-to-s3-python
-
-    Parameters
-    ----------
-    df : Pandas Dataframe
-    resource : boto3 s3 resource
-    filename : String of the file that will be created in the S3 bucket
-    index: boolean that will or will not publish the dataframe index in the csv
-
-    """
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=index)
-    resource.Object(BUCKET, f"{filename}.csv").put(Body=csv_buffer.getvalue())
-
 
 def expenses_obligated(df):
     """
@@ -217,7 +202,7 @@ def summarize_expenses(df, fy, client):
     # Summarizing our expenses data by year, month, Dashboard DeptFundProgAct, and FY
     df = df.groupby(
         [df.index.year, df.index.month, "dashboard_deptfundprogact", "fiscal_year"]
-    ).sum()
+    ).sum(numeric_only=True)
 
     # Creates a group column that allows us to access it inside other functions
     df["group"] = df.index.to_series()
@@ -244,7 +229,7 @@ def determine_fy(client):
     df = df.set_index("datetime")
     df = df.sort_index()
 
-    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum()
+    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum(numeric_only=True)
 
     df["group"] = df.index.to_series()
 
@@ -259,14 +244,14 @@ def summarize_plans(file, fy, client):
     df = df.set_index("datetime")
     df = df.sort_index()
 
-    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum()
+    df = df.groupby([df.index.year, df.index.month, "dashboard_deptfundprogact"]).sum(numeric_only=True)
 
     df["group"] = df.index.to_series()
 
     df["fiscal_year"] = df.apply(fiscal_year, axis=1)
 
     df["table_col"] = df.apply(group_plans, fiscal_year=fy, axis=1)
-    df = df.groupby(["table_col", "dashboard_deptfundprogact"]).sum()
+    df = df.groupby(["table_col", "dashboard_deptfundprogact"]).sum(numeric_only=True)
     return df
 
 def summary_table(expenses, fiscal_year,client):
@@ -279,7 +264,7 @@ def summary_table(expenses, fiscal_year,client):
             spend_plan = "bond_2020_current_fy_spend_plan"
 
         expenses_summary = summarize_expenses(expenses, fy, client)
-        expenses_summary = expenses_summary.groupby(["table_col", "dashboard_deptfundprogact"]).sum()
+        expenses_summary = expenses_summary.groupby(["table_col", "dashboard_deptfundprogact"]).sum(numeric_only=True)
         expenses_summary = expenses_summary.rename(columns={"expenses": "Expenses"})
 
         baseline_summary = summarize_plans("bond_2020_baseline_spend", fy, client)
@@ -309,8 +294,18 @@ def summary_table(expenses, fiscal_year,client):
 
     return dfs[0], dfs[1]
 
-
-
+def df_to_socrata(soda, df, dataset_id,date_field, include_index):
+    if date_field:
+        df["date"] = pd.to_datetime(df["date"], infer_datetime_format=True)
+        df["date"] = df["date"].dt.strftime(DATE_FORMAT_SOCRATA)
+    if include_index:
+        df = df.reset_index()
+    df = df.replace({np.nan: None})
+    payload = df.to_dict(orient="records")
+    try:
+        res = soda.replace(dataset_id, payload)
+    except Exception as e:
+        raise e
 
 def main():
     client = Postgrest(
@@ -318,6 +313,9 @@ def main():
         token=POSTGREST_TOKEN,
         headers={"Prefer": "return=representation"},
     )
+
+    # Socrata client
+    soda = Socrata(SO_WEB, SO_TOKEN, username=SO_KEY, password=SO_SECRET, timeout=500, )
 
     # Data from Microstrategy is in S3
     # 2020 Bond Expenses Obligated.csv
@@ -329,20 +327,20 @@ def main():
 
     all_bond_data = all_bond_expenses_obligated(all_bond_data, app)
 
-    s3_resource = boto3.resource(
-        "s3", aws_access_key_id=AWS_ACCESS_ID, aws_secret_access_key=AWS_PASS
-    )
-
-    df_to_s3(bond_data_2020, s3_resource, "curr_fyear_obligated_expenses", False)
-    df_to_s3(py_bond_data_2020, s3_resource, "prev_fyear_obligated_expenses", False)
-    df_to_s3(all_bond_data, s3_resource, "all_bonds_obligation_expenses", False)
+    # curr_fyear_obligated_expenses
+    df_to_socrata(soda, bond_data_2020, "vs3t-h2aj",  date_field=True, include_index=False)
+    # prev_fyear_obligated_expenses
+    df_to_socrata(soda, py_bond_data_2020, "jdna-s8qn", date_field=True, include_index=False)
+    # all_bonds_obligation_expenses
+    df_to_socrata(soda, all_bond_data,"rrww-ybw6", date_field=True, include_index=False)
 
     fy = determine_fy(client)
 
     py_summary, cy_summary = summary_table(bond_data_2020, fy, client)
-    df_to_s3(cy_summary, s3_resource, "curr_year_table", True)
-    df_to_s3(py_summary, s3_resource, "prev_year_table", True)
-
+    # curr_year_table
+    df_to_socrata(soda, cy_summary, "hq9n-d77y", date_field=False, include_index=True)
+    # prev_year_table
+    df_to_socrata(soda, py_summary, "5ewg-ssu3", date_field=False, include_index=True)
 
 if __name__ == "__main__":
     main()
