@@ -2,6 +2,8 @@
 
 ETL that is the backend of the ATD/PWD Bond Spending Dashboard in Power BI. 
 
+![Data flow diagram](images/data-flow-diagram.png?raw=true)
+
 ***
 
 ## microstrategy_to_s3.py
@@ -16,9 +18,18 @@ The `REPORTS` dict (`report_name`:`report_id`) at the top of this file stores wh
 
 The purpose of this script is to make it easier to access Microstrategy reports in external applications like Power BI. The URL for all objects in the S3 bucket is default to publicly accessible. bond_data.py and bond_calculations.py build off of this. 
 
-### Running
+### Configuration and running
 
-Run this script with the `-r` argument to provide the key of `REPORTS` dict you want to run. This will create a file in the S3 bucket with the same name.
+Run this script with the `-r` argument to provide the key of `REPORTS` configuration dict at the top of `microstrategy_to_s3.py` you want to run. This will create a file in the S3 bucket with the same name. 
+
+```
+REPORTS = {
+    "a report name you pick": "abc123", # Microstrategy Report ID
+}
+
+```
+
+To find a report's ID, go to the report page in Microstrategy then, go to Tools > "Report Details" Page or "Document Details" Page. Then, click the "Show Advanced Details" button at the bottom.
 
 ```
 $ python microstrategy_to_s3.py -r "name of your report"
@@ -65,8 +76,10 @@ The summary tables group the above data by month (`table_col`) for the selected 
 - 2020 Bond Dashboard: Current Fiscal Year Summary Table
 - 2020 Bond Dashboard: Previous Fiscal Year Summary Table
 
+***
 
+## Deployment
 
+The provided Dockerfile will package this repo for deployment as an ETL in [Prefect](https://github.com/cityofaustin/atd-prefect). This image is pushed to our [dockerhub repo](https://hub.docker.com/r/atddocker/atd-bond-reporting). Prefect uses this Docker container and a set of commands to orchestrate this ETL.
 
-
-
+This repo has CI that will re-build and push to dockerhub the `production` and `latest` tags when a PR has been merged into `main`.
