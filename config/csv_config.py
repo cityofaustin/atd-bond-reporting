@@ -10,28 +10,51 @@ from pandera import Column, DataFrameSchema, Check
 BOND_2020_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/2020+Bond+Expenses+Obligated.csv"
 # All bonds Expenses Obligated.csv
 ALL_BONDS_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/All+bonds+Expenses+Obligated.csv"
+# All bonds Expenses Obligated.csv
+STAGING_ALL_BONDS_EXP = "abcd"
 
 # Google Docs:
+BOND_2020_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid="
+
 # 2020 AIMS to Dashboard ID Lookup table
-AIMS_DASHBOARD = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=202806724&single=true&output=csv"
+AIMS_DASHBOARD = f"{BOND_2020_BASE_URL}202806724&single=true&output=csv"
 # Baseline Spend data
-BASELINE_SPEND = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?output=csv"
+BASELINE_SPEND = f"{BOND_2020_BASE_URL}0&single=true&output=csv"
 # Current FY Spend Plan
-CY_SPEND_PLAN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=1856896414&single=true&output=csv"
+CY_SPEND_PLAN = f"{BOND_2020_BASE_URL}1856896414&single=true&output=csv"
 # Previous FY Spend Plan
-PY_SPEND_PLAN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=1042748786&single=true&output=csv"
-# Dashboard Appropriation for all bonds
-APPRO_DATA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=20835862&single=true&output=csv"
-# All bonds DeptFundProgAct lookup table
-DEPTFUNDPROGACT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=1889713154&single=true&output=csv"
-# All bonds AIMS to dashboard ID lookup table
-AIMS_ALL_BONDS_DASHBOARD = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=811620554&single=true&output=csv"
-# All bonds spend plan
-SPEND_PLAN_ALL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=1092895732&single=true&output=csv"
-# All bonds Baseline spend
-BASELINE_SPEND_ALL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=0&single=true&output=csv"
+PY_SPEND_PLAN = f"{BOND_2020_BASE_URL}1042748786&single=true&output=csv"
 # 2020 Bond Program Name lookup Table
-BOND_PROG_NAMES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=215255456&single=true&output=csv"
+BOND_PROG_NAMES = f"{BOND_2020_BASE_URL}215255456&single=true&output=csv"
+
+ALL_BONDS_BASE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid="
+
+# Dashboard Appropriation for all bonds
+APPRO_DATA = f"{ALL_BONDS_BASE_URL}20835862&single=true&output=csv"
+# All bonds DeptFundProgAct lookup table
+DEPTFUNDPROGACT = f"{ALL_BONDS_BASE_URL}1889713154&single=true&output=csv"
+# All bonds AIMS to dashboard ID lookup table
+AIMS_ALL_BONDS_DASHBOARD = f"{ALL_BONDS_BASE_URL}811620554&single=true&output=csv"
+# All bonds spend plan
+SPEND_PLAN_ALL = f"{ALL_BONDS_BASE_URL}1092895732&single=true&output=csv"
+# All bonds Baseline spend
+BASELINE_SPEND_ALL = f"{ALL_BONDS_BASE_URL}0&single=true&output=csv"
+
+# Staging test for all bonds adding 2010 and 2012
+ALL_STAGING_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQPRqa7V-9T-b00fEkVr1Riy46Eqz6epexii8B8Hm_N6cANHXCOXH2zzWHWlDFbDDrU23C9k4fiTpXa/pub?gid="
+
+# Dashboard Appropriation for all bonds
+STAGING_APPRO_DATA = f"{ALL_STAGING_URL}20835862&single=true&output=csv"
+# All bonds DeptFundProgAct lookup table
+STAGING_DEPTFUNDPROGACT = f"{ALL_STAGING_URL}1889713154&single=true&output=csv"
+# All bonds AIMS to dashboard ID lookup table
+STAGING_AIMS_ALL_BONDS_DASHBOARD = f"{ALL_STAGING_URL}811620554&single=true&output=csv"
+# All bonds spend plan
+STAGING_SPEND_PLAN_ALL = f"{ALL_STAGING_URL}1092895732&single=true&output=csv"
+# All bonds Baseline spend
+STAGING_BASELINE_SPEND_ALL = f"{ALL_STAGING_URL}0&single=true&output=csv"
+
+
 
 CSVS = [
     {
@@ -286,6 +309,136 @@ CSVS = [
                 "funding_amount": Column(int),
                 "program_sort": Column(int),
                 "sub_program_sort": Column(int),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING_APPRO_DATA,
+        "table": "all_bonds_appropriations_staging",
+        "date_field": True,
+        "field_maps": {
+            "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
+            "Date": "date",
+            "Appropriation": "amount",
+        },
+        "schema": DataFrameSchema(
+            {
+                "dashboard_deptfundprogact": Column(str),
+                "date": Column(str),
+                "amount": Column(int),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING_DEPTFUNDPROGACT,
+        "table": "all_bonds_program_names_staging",
+        "date_field": False,
+        "field_maps": {
+            "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
+            "Dashboard Dept Name": "department_name",
+            "Dashboard Bond Year": "bond_year",
+            "Dashboard Program Name": "program_name",
+            "Dashboard Sub Program Name": "sub_program_name",
+            "Program Sort": "program_sort",
+            "Sub Program Sort": "sub_program_sort",
+        },
+        "schema": DataFrameSchema(
+            {
+                "dashboard_deptfundprogact": Column(str),
+                "department_name": Column(str),
+                "bond_year": Column(int),
+                "program_name": Column(str),
+                "sub_program_name": Column(str),
+                "program_sort": Column(int),
+                "sub_program_sort": Column(int),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING-AIMS_ALL_BONDS_DASHBOARD,
+        "table": "all_bonds_aims_to_dashboard_staging",
+        "date_field": False,
+        "field_maps": {
+            "AIMS Dept Prog Act": "aims_dept_prog_act",
+            "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
+        },
+        "schema": DataFrameSchema(
+            {
+                "aims_dept_prog_act": Column(str),
+                "dashboard_deptfundprogact": Column(str),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING_SPEND_PLAN_ALL,
+        "table": "all_bonds_spend_plan_staging",
+        "date_field": False,
+        "field_maps": {
+            "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
+            "Fiscal Year": "fiscal_year",
+            "SpndPln-Bdgt":"amount",
+        },
+        "schema": DataFrameSchema(
+            {
+                "dashboard_deptfundprogact": Column(str),
+                "fiscal_year": Column(int),
+                "amount": Column(int),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING_BASELINE_SPEND_ALL,
+        "table": "all_bonds_baseline_spend_staging",
+        "date_field": True,
+        "field_maps": {
+            "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
+            "Date": "date",
+            "Amount": "amount",
+        },
+        "schema": DataFrameSchema(
+            {
+                "dashboard_deptfundprogact": Column(str),
+                "date": Column(str),
+                "amount": Column(int),
+            },
+            strict=True,
+        ),
+    },
+    {
+        "url": STAGING_ALL_BONDS_EXP,
+        "table": "expenses_obligated_all_bonds_raw_staging",
+        "date_field": True,
+        "field_maps": {
+            "Fund@Code": "fund_code",
+            "Fund@Long Name": "fund_long_name",
+            "Division (As-Is)@Code": "division_code",
+            "Division (As-Is)@Long Name": "division_long_name",
+            "Department@Dept": "department",
+            "Department@Long Name": "department_long_name",
+            "Date": "date",
+            "Group (As-Is)@Code": "group_code",
+            "Group (As-Is)@Long Name": "group_long_name",
+            "Obligated": "obligated",
+            "Expenses": "expenses",
+        },
+        "schema": DataFrameSchema(
+            {
+                "fund_code": Column(str),
+                "fund_long_name": Column(str),
+                "date": Column(str),
+                "division_code": Column(str),
+                "division_long_name": Column(str),
+                "department": Column(int),
+                "department_long_name": Column(str),
+                "group_code": Column(str),
+                "group_long_name": Column(str),
+                "obligated": Column(float),
+                "expenses": Column(float),
             },
             strict=True,
         ),
