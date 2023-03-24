@@ -1,12 +1,16 @@
-import pandas as pd
 from config.csv_config import CSVS
 
-import os
+import boto3
+import pandas as pd
 from pypgrest import Postgrest
+
+import os
 
 POSTGREST_ENDPOINT = os.getenv("POSTGREST_ENDPOINT")
 POSTGREST_TOKEN = os.getenv("POSTGREST_TOKEN")
-
+AWS_ACCESS_ID = os.getenv("AWS_ACCESS_ID")
+AWS_PASS = os.getenv("AWS_PASS")
+BUCKET = os.getenv("BUCKET")
 
 def field_mapping(df, maps):
     """
@@ -76,9 +80,17 @@ def main():
         token=POSTGREST_TOKEN,
         headers={"Prefer": "return=representation"},
     )
+    s3_client = boto3.client(
+    "s3", aws_access_key_id = AWS_ACCESS_ID, aws_secret_access_key = AWS_PASS,
+                                                                          )
 
     for table in CSVS:
-        df = pd.read_csv(table["url"])
+        if table['boto3']:
+            # Flag to use boto3 to read our CSV from S3
+            response = s3_client.get_object(Bucket="atd-microstrategy-reports", Key=table["url"])
+            df = pd.read_csv(response.get("Body"))
+        else:
+            df = pd.read_csv(table["url"])
         df = field_mapping(df, table["field_maps"])
         if table["date_field"]:
             df = convert_datetime(df, "date")

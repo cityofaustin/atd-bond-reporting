@@ -4,13 +4,13 @@ Configuration for the data sources of CSVs
 
 from pandera import Column, DataFrameSchema, Check
 
-## CSV Endpoints
-# Microstrategy
+# Microstrategy file names in S3
 # 2020 Bond Expenses Obligated.csv
-BOND_2020_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/2020+Bond+Expenses+Obligated.csv"
+BOND_2020_EXP = "2020 Bond Expenses Obligated.csv"
 # All bonds Expenses Obligated.csv
-ALL_BONDS_EXP = "https://atd-microstrategy-reports.s3.amazonaws.com/All+bonds+Expenses+Obligated.csv"
+ALL_BONDS_EXP = "All bonds Expenses Obligated.csv"
 
+## CSV Endpoints
 # Google Docs:
 # 2020 AIMS to Dashboard ID Lookup table
 AIMS_DASHBOARD = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=202806724&single=true&output=csv"
@@ -38,6 +38,7 @@ CSVS = [
         "url": BOND_2020_EXP,  # URL of the CSV file
         "table": "expenses_obligated_2020_bond_raw",  # Name of the table in the DB
         "date_field": True,  # True if this CSV has a "date" field
+        "boto3": True,  # True if we should use boto3 to read this file from S3
         "field_maps": {  # Mapping between CSV column names and those expected by the table
             "Fund": "fund",
             "Department": "department",
@@ -66,6 +67,7 @@ CSVS = [
         "url": ALL_BONDS_EXP,
         "table": "expenses_obligated_all_bonds_raw",
         "date_field": True,
+        "boto3": True,
         "field_maps": {
             "Fund@Code": "fund_code",
             "Fund@Long Name": "fund_long_name",
@@ -100,6 +102,7 @@ CSVS = [
         "url": AIMS_DASHBOARD,
         "table": "bond_2020_aims_to_dashboard",
         "date_field": False,
+        "boto3": False,
         "field_maps": {
             "AIMS Dept Prog Act": "aims_dept_prog_act",
             "Dashboard DeptFundProgAct": "dashboard_deptfundprogact",
@@ -116,6 +119,7 @@ CSVS = [
         "url": BASELINE_SPEND,
         "table": "bond_2020_baseline_spend",
         "date_field": True,
+        "boto3": False,
         "field_maps": {
             "Dashboard DeptFundProgAct": "dashboard_deptfundprogact",
             "Date": "date",
@@ -134,6 +138,7 @@ CSVS = [
         "url": CY_SPEND_PLAN,
         "table": "bond_2020_current_fy_spend_plan",
         "date_field": True,
+        "boto3": False,
         "field_maps": {
             "Dashboard DeptFundProgAct": "dashboard_deptfundprogact",
             "Date": "date",
@@ -152,6 +157,7 @@ CSVS = [
         "url": PY_SPEND_PLAN,
         "table": "bond_2020_previous_fy_spend_plan",
         "date_field": True,
+        "boto3": False,
         "field_maps": {
             "Dashboard DeptFundProgAct": "dashboard_deptfundprogact",
             "Date": "date",
@@ -170,6 +176,7 @@ CSVS = [
         "url": APPRO_DATA,
         "table": "all_bonds_appropriations",
         "date_field": True,
+        "boto3": False,
         "field_maps": {
             "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
             "Date": "date",
@@ -188,6 +195,7 @@ CSVS = [
         "url": DEPTFUNDPROGACT,
         "table": "all_bonds_program_names",
         "date_field": False,
+        "boto3": False,
         "field_maps": {
             "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
             "Dashboard Dept Name": "department_name",
@@ -214,6 +222,7 @@ CSVS = [
         "url": AIMS_ALL_BONDS_DASHBOARD,
         "table": "all_bonds_aims_to_dashboard",
         "date_field": False,
+        "boto3": False,
         "field_maps": {
             "AIMS Dept Prog Act": "aims_dept_prog_act",
             "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
@@ -230,6 +239,7 @@ CSVS = [
         "url": SPEND_PLAN_ALL,
         "table": "all_bonds_spend_plan",
         "date_field": False,
+        "boto3": False,
         "field_maps": {
             "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
             "Fiscal Year": "fiscal_year",
@@ -248,6 +258,7 @@ CSVS = [
         "url": BASELINE_SPEND_ALL,
         "table": "all_bonds_baseline_spend",
         "date_field": True,
+        "boto3": False,
         "field_maps": {
             "Dashboard FundDeptProgAct": "dashboard_deptfundprogact",
             "Date": "date",
@@ -266,6 +277,7 @@ CSVS = [
         "url": BOND_PROG_NAMES,
         "table": "bond_2020_program_names",
         "date_field": False,
+        "boto3": False,
         "field_maps": {
             "Dashboard DeptFundProgAct": "dashboard_deptfundprogact",
             "Dashboard Dept Name": "department_name",
