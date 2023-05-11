@@ -22,10 +22,17 @@ BUCKET = os.getenv("BUCKET")
 REPORTS = {
     "2020 Bond Expenses Obligated": "85A9E0A049F06D98AF1CF3BE8CDA9394",
     "All bonds Expenses Obligated": "6B0DE57644C7C9912AAAE48392873233",
+    "2020 FDUs with Subproject and Appropriation": "97DE7BEFEE4C93C18FE27199BBBA00BF",
+    "Subprojects with total Appropriation": "01EF933E6D4FA79501CF10AF39DD8163",
+    "Open Subprojects with Budget Estimate": "E2AC0ACEF944222D0039DA9FF07BA05C",
+    "FDU Expenses by Quarter": "39EAC86D2F43664777ED6C9DBA27B43B",
+    "2020 Division Group and Unit": "221FEFD57C4B215CCB6BE2BD8DEE8CA9",
 }
 # To find report ID, go to the report in Microstrategy then:
 ## Go to Tools > Report Details Page or Document Details Page.
 ## Click Show Advanced Details button at the bottom
+# To view any of these reports in microstrategy (replace report_id):
+# https://coa-prod.cloud.microstrategy.com:443/MicroStrategy/servlet/mstrWeb?&src=4001&evt=4001&reportViewMode=1&reportID=report_id
 
 
 # Returns a connection object for interacting with the microstrategy API
