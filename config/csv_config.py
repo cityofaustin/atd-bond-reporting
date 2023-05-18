@@ -384,7 +384,7 @@ CSVS = [
             {
                 "dashboard_deptfundprogact": Column(str),
                 "fiscal_year": Column(int),
-                "amount": Column(int),
+                "amount": Column(float),
             },
             strict=True,
         ),
