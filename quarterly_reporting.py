@@ -159,6 +159,7 @@ def to_output(df, spend):
 
     # Cumulative totals
     quarter = df[df["month_col"] != "0"]
+    quarter["spend_plan"] = quarter["spend_plan"].fillna(0)
     quarter = quarter.set_index("month_col")
     quarter = quarter.sort_index()
     quarter["sum_expenses"] = quarter.groupby(["unit_code"])["expenses"].cumsum()
