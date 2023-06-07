@@ -70,7 +70,7 @@ def to_postgres(client, df, table):
         params = {"select": "*", "updated_at": f"lt.{time}", "order": "updated_at"}
         res = client.delete(resource=table, params=params)
     except Exception as e:
-        raise e
+        raise e.text
     return res
 
 
