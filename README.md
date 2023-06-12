@@ -14,11 +14,6 @@ This script runs and then downloads a report from Microstrategy and then uploads
 
 The `REPORTS` dict (`report_name`:`report_id`) at the top of this file stores what reports can be extracted. 
 
-Currently used report links (need to be logged into COA SSO):
-- [2020 Bond Expenses Obligated](https://coa-prod.cloud.microstrategy.com:443/MicroStrategy/servlet/mstrWeb?evt=4058&src=mstrWeb.4058&_subscriptionID=F456433D5A45E3998D679787E8C752A6&reportViewMode=1&Server=ENV-279976LAIO1USE1&Project=Financial%20Services%20Analytics&Port=39321&share=1)
-- [All bonds Expenses Obligated](https://coa-prod.cloud.microstrategy.com:443/MicroStrategy/servlet/mstrWeb?evt=4058&src=mstrWeb.4058&_subscriptionID=B345C30DC440C8CC732ADD9F7C3B2EEC&reportViewMode=1&Server=ENV-279976LAIO1USE1&Project=Financial%20Services%20Analytics&Port=39321&share=1)
-- More coming soon...
-
 ### Power BI
 
 The purpose of this script is to make it easier to access Microstrategy reports in external applications like Power BI. The URL for all objects in the S3 bucket is default to publicly accessible. bond_data.py and bond_calculations.py build off of this. 
@@ -82,16 +77,6 @@ The summary tables group the above data by month (`table_col`) for the selected 
 - 2020 Bond Dashboard: Previous Fiscal Year Summary Table
 
 ***
-
-## quarterly_reporting.py
-
-This ETL feeds data into three new Socrata datasets for this new quarterly bond reporting tab:
-- [FDU metadata](https://datahub.austintexas.gov/dataset/2020-Bond-Dashboard-FDU-Metadata/x2us-mcf7) is used to filter down the next two data by the program/subprogram level.
-- [Expenses and Spend Plan by Quarter](https://datahub.austintexas.gov/dataset/2020-Bond-Dashboard-Expenses-and-Spend-Plan-by-Qua/cpw3-9e8n) is just the expenses and spend plan for each unit by month/quarter.
-- [Subproject appropriation and budget](https://datahub.austintexas.gov/dataset/2020-Bond-Dashboard-Subproject-Appropriation-and-B/e3b7-kndw).
-
-The product of these datasets is a dashboard tab where we can visualize the bond spending by quarter and month within 
-each quarter.
 
 ## Deployment
 
