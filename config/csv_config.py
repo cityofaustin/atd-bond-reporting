@@ -209,8 +209,6 @@ CSVS = [
         "field_maps": {
             "Subproject@Number": "subproject_number",
             "Subproject@Name": "subproject_name",
-            "Department@Long Name": "department_long_name",
-            "Department@Dept": "department",
             "Group (As-Is)@Code": "subprogram_code",
             "Group (As-Is)@Long Name": "subprogram_long_name",
             "Division (As-Is)@Code": "program_code",
@@ -223,8 +221,6 @@ CSVS = [
             {
                 "subproject_number": Column(float),
                 "subproject_name": Column(str),
-                "department_long_name": Column(str),
-                "department": Column(int),
                 "subprogram_code": Column(str),
                 "subprogram_long_name": Column(str),
                 "program_code": Column(str),
@@ -446,7 +442,6 @@ CSVS = [
         "date_field": False,
         "boto3": False,
         "field_maps": {
-            "Department": "department",
             "Unit": "unit_code",
             "Unit Name": "unit_name",
             "Fiscal Year": "fiscal_year",
@@ -456,7 +451,6 @@ CSVS = [
         },
         "schema": DataFrameSchema(
             {
-                "department": Column(int),
                 "unit_code": Column(str),
                 "unit_name": Column(str),
                 "fiscal_year": Column(int),

@@ -200,14 +200,11 @@ def main():
     soda = Socrata(SO_WEB, SO_TOKEN, username=SO_KEY, password=SO_SECRET, timeout=500, )
 
     # Download & transform subproject reports
-    # subprojects = subproject_transformation(client)
-    # df_to_socrata(soda, subprojects, SUBPROJECT_DATASET, True)
+    subprojects = subproject_transformation(client)
+    df_to_socrata(soda, subprojects, SUBPROJECT_DATASET, True)
 
     # Download & transform subproject reports
     metadata = create_fdu_metadata_table(client)
-    # unit_code is used to join in the spend plan data, but after TPW merger we need to include department as well.
-    metadata["unit_code"] = metadata["department"].astype(str) + metadata["unit_code"]
-    metadata.drop(["department", "department_long_name"], axis=1, inplace=True)
     df_to_socrata(soda, metadata, FDU_DATASET, False)
 
     # Get expenses data by FDU
@@ -215,9 +212,6 @@ def main():
 
     # Now, create a column we will use to group by later of the form FY-MON
     exp["month_col"] = exp.apply(create_month_col, axis=1)
-
-    # unit_code is used to join in the spend plan data, but after TPW merger we need to include department as well.
-    exp["unit_code"] = exp["department"].astype(str) + exp["unit_code"]
 
     # Group by FDU, and calculate the expenses by each month
     exp = pd.pivot_table(
@@ -292,9 +286,6 @@ def main():
 
     # Gather spend plan data (originally in Google Drive)
     spend_plan = get_data(client, SPEND_PLAN)
-    # unit_code is used to join in the spend plan data, but after TPW merger we need to include department as well.
-    spend_plan["unit_code"] = spend_plan["department"].astype(str) + spend_plan["unit_code"]
-
     spend_plan["month_no"] = spend_plan.apply(encode_months, axis=1)
     # Make the same month_col, so we can match it back to the expenses data
     spend_plan["month_col"] = (
@@ -315,7 +306,6 @@ def main():
     output = exp.append(prev_exp)
 
     # Replace data in Socrata
-    output.drop(["department"], axis=1, inplace=True)
     df_to_socrata(soda, output, EXPENSES_DATASET, False)
 
 
