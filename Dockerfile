@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bookworm
+FROM python:3.8-slim
 
 # Install supporting OS support for building python libraries
 RUN apt-get update
