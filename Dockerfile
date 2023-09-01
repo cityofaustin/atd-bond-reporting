@@ -5,8 +5,9 @@ RUN apt-get update
 RUN apt-get install -y build-essential
 
 # Copy in our application
+WORKDIR /app
 COPY . /app/atd-bond-reporting
+RUN chmod -R 755 /app/*
 
 # Install the requirements
-WORKDIR /app/atd-bond-reporting 
-RUN pip install -r requirements.txt
+RUN cd /app/atd-bond-reporting && pip install -r requirements.txt
