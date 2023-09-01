@@ -146,12 +146,11 @@ CREATE TABLE api.fdu_expenses_quarterly (
 );
 
 CREATE TABLE api.quarterly_spend_plan (
-  "department" int,
   "unit_code" text,
   "unit_name" text,
   "fiscal_year" int,
   "quarter" int,
-  "month" text,
+  "month" str,
   "spend_plan" numeric,
   "updated_at" timestamp
 );
@@ -161,8 +160,6 @@ CREATE TABLE api.fdu_metadata_quarterly (
   "subproject_name" text,
   "subprogram_code" text,
   "subprogram_long_name" text,
-  "department_long_name" text,
-  "department" int,
   "program_code" text,
   "program_long_name" text,
   "unit_code" text,
