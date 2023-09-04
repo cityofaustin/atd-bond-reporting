@@ -12,6 +12,7 @@ AWS_ACCESS_ID = os.getenv("AWS_ACCESS_ID")
 AWS_PASS = os.getenv("AWS_PASS")
 BUCKET = os.getenv("BUCKET")
 
+
 def field_mapping(df, maps):
     """
     Renames columns in a dataframe to match the schema of the corresponding postgrest table
@@ -24,11 +25,12 @@ def field_mapping(df, maps):
     Returns: df with renamed columns
     -------
     """
-    cols = df.columns
 
-    # Making sure that all columns are present
-    for column in cols:
-        assert column in maps
+    # Making sure that all the necessary columns are present
+    df = df[maps.keys()]
+    cols = df.columns
+    for key in maps:
+        assert key in cols
 
     df = df.rename(columns=maps)
     return df
@@ -58,7 +60,7 @@ def validate_schema(df, schema):
 
 def to_postgres(client, df, table):
     # Creating updated_at column
-    time = pd.to_datetime("now",utc=True)
+    time = pd.to_datetime("now", utc=True)
     df["updated_at"] = str(time)
 
     # Send df to database
@@ -81,13 +83,17 @@ def main():
         headers={"Prefer": "return=representation"},
     )
     s3_client = boto3.client(
-    "s3", aws_access_key_id = AWS_ACCESS_ID, aws_secret_access_key = AWS_PASS,
-                                                                          )
+        "s3",
+        aws_access_key_id=AWS_ACCESS_ID,
+        aws_secret_access_key=AWS_PASS,
+    )
 
     for table in CSVS:
-        if table['boto3']:
+        if table["boto3"]:
             # Flag to use boto3 to read our CSV from S3
-            response = s3_client.get_object(Bucket="atd-microstrategy-reports", Key=table["url"])
+            response = s3_client.get_object(
+                Bucket="atd-microstrategy-reports", Key=table["url"]
+            )
             df = pd.read_csv(response.get("Body"))
         else:
             df = pd.read_csv(table["url"])
