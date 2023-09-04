@@ -24,11 +24,12 @@ def field_mapping(df, maps):
     Returns: df with renamed columns
     -------
     """
-    cols = df.columns
 
     # Making sure that all columns are present
-    for column in cols:
-        assert column in maps
+    df = df[maps.keys()]
+    cols = df.columns
+    for key in maps:
+        assert key in cols
 
     df = df.rename(columns=maps)
     return df
