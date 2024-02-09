@@ -342,9 +342,13 @@ def main():
     # prev_year_table
     df_to_socrata(soda, py_summary, "5ewg-ssu3", date_field=False, include_index=True)
 
-    # Upload all bonds metadata to socrata as well
+    # Upload all bonds metadata to socrata
     df = get_data(client, "all_bonds_program_names")
     df_to_socrata(soda, df, "9ufs-k2md")
+
+    # Upload all bonds ID lookup table to socrata
+    df = get_data(client, "all_bonds_aims_to_dashboard")
+    df_to_socrata(soda, df, "mri6-eexh")
 
 if __name__ == "__main__":
     main()
