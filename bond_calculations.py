@@ -294,7 +294,7 @@ def summary_table(expenses, fiscal_year,client):
 
     return dfs[0], dfs[1]
 
-def df_to_socrata(soda, df, dataset_id,date_field, include_index):
+def df_to_socrata(soda, df, dataset_id,date_field=False, include_index=False):
     if date_field:
         df["date"] = pd.to_datetime(df["date"], infer_datetime_format=True)
         df["date"] = df["date"].dt.strftime(DATE_FORMAT_SOCRATA)
@@ -341,6 +341,10 @@ def main():
     df_to_socrata(soda, cy_summary, "hq9n-d77y", date_field=False, include_index=True)
     # prev_year_table
     df_to_socrata(soda, py_summary, "5ewg-ssu3", date_field=False, include_index=True)
+
+    # Upload all bonds metadata to socrata as well
+    df = get_data(client, "all_bonds_program_names")
+    df_to_socrata(soda, df, "9ufs-k2md")
 
 if __name__ == "__main__":
     main()
