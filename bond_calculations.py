@@ -127,7 +127,7 @@ def expenses_obligated(df):
     return df, pdf
 
 
-def all_bond_expenses_obligated(df, app):
+def all_bond_expenses_obligated(df):
     # Lookup column we use is a concatenation of a few fields
     df["aims_dept_prog_act"] = (
         df["department"].astype(str)
@@ -322,10 +322,9 @@ def main():
     bond_data_2020 = get_data(client, "expenses_obligated_2020_bond_raw")
     bond_data_2020, py_bond_data_2020 = expenses_obligated(bond_data_2020)
 
-    all_bond_data =  get_data(client,"expenses_obligated_all_bonds_raw")
-    app = get_data(client, "all_bonds_appropriations")
+    all_bond_data = get_data(client, "expenses_obligated_all_bonds_raw")
 
-    all_bond_data = all_bond_expenses_obligated(all_bond_data, app)
+    all_bond_data = all_bond_expenses_obligated(all_bond_data)
 
     # curr_fyear_obligated_expenses
     df_to_socrata(soda, bond_data_2020, "vs3t-h2aj",  date_field=True, include_index=False)
@@ -344,6 +343,12 @@ def main():
 
     # Upload all bonds metadata to socrata
     df = get_data(client, "all_bonds_program_names")
+
+    # Join in the appropriation totals
+    app = get_data(client, "all_bonds_appropriations")
+    app = app.pivot_table(index="dashboard_deptfundprogact", values="amount", aggfunc=sum)
+    df = df.merge(app, on="dashboard_deptfundprogact", how="left")
+    df = df.rename(columns={"amount": "appropriated"})
     df_to_socrata(soda, df, "9ufs-k2md")
 
     # Upload all bonds ID lookup table to socrata
