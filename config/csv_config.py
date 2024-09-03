@@ -7,12 +7,6 @@ from pandera import Column, DataFrameSchema, Check
 # Microstrategy file names in S3
 BOND_2020_EXP = "2020 Bond Expenses Obligated.csv"
 ALL_BONDS_EXP = "All bonds Expenses Obligated.csv"
-FDUS_2020 = "2020 FDUs with Subproject and Appropriation.csv"
-SUBPROJECT_APPRO = "Subprojects with total Appropriation.csv"
-SUBPROJECT_BUDGET = "Open Subprojects with Budget Estimate.csv"
-SUBPROJECT_BUDGET = "Open Subprojects with Budget Estimate.csv"
-FDU_EXPENSES = "FDU Expenses by Quarter.csv"
-FDU_METADATA = "2020 Division Group and Unit.csv"
 
 ## CSV Endpoints
 # Google Docs:
@@ -36,8 +30,6 @@ SPEND_PLAN_ALL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3I
 BASELINE_SPEND_ALL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRhT8BEVrEMi3ISFPiz8ujKqmIkBgX9kvEQCdTU3eneG46cCr1-Cf1KJ5wovsej6gNPYx9UBEGN4VKi/pub?gid=0&single=true&output=csv"
 # 2020 Bond Program Name lookup Table
 BOND_PROG_NAMES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSGZb6KRHwiSgxxsIrmxzDtEFR8Dg1QFfQ65dybwBv_EvZRCh3Fi1YqOP3vYI1uOe8M5ZZVFVuvUkZ-/pub?gid=215255456&single=true&output=csv"
-# Quarterly Spend Plan
-QUARTERLY_SPEND_PLAN = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQCnILsJPgR7WqJgsOHobhQhVR5iZX4tzBeQi7AwWaBsflrpV5P1Lg0azwsiqqSVwLzRDfxe-gEgxP/pub?gid=0&single=true&output=csv"
 
 CSVS = [
     {
@@ -100,139 +92,6 @@ CSVS = [
                 "group_long_name": Column(str),
                 "obligated": Column(float),
                 "expenses": Column(float),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": FDUS_2020,
-        "table": "fdus_2020_bond",
-        "date_field": False,
-        "boto3": True,
-        "field_maps": {
-            "Subproject@Number": "subproject_number",
-            "Subproject@Name": "subproject_name",
-            "Subproject@Status": "subproject_status",
-            "Unit@Unit Code": "unit_code",
-            "Unit@Long Name": "unit_name",
-            "Appropriated": "appropriated",
-        },
-        "schema": DataFrameSchema(
-            {
-                "subproject_number": Column(float),
-                "subproject_name": Column(str),
-                "subproject_status": Column(str),
-                "unit_code": Column(str),
-                "unit_name": Column(str),
-                "appropriated": Column(float),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": SUBPROJECT_APPRO,
-        "table": "subprojects_with_appropriations",
-        "date_field": False,
-        "boto3": True,
-        "field_maps": {
-            "Subproject@Number": "subproject_number",
-            "Subproject@Name": "subproject_name",
-            "Budget": "subproject_appropriation",
-        },
-        "schema": DataFrameSchema(
-            {
-                "subproject_number": Column(float),
-                "subproject_name": Column(str),
-                "subproject_appropriation": Column(float),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": SUBPROJECT_BUDGET,
-        "table": "subprojects_with_budget",
-        "date_field": False,
-        "boto3": True,
-        "field_maps": {
-            "Subproject@Number": "subproject_number",
-            "Subproject@Name": "subproject_name",
-            "Subproject@Status": "subproject_status",
-            "Current Budget Estimate Amount": "project_estimate",
-        },
-        "schema": DataFrameSchema(
-            {
-                "subproject_number": Column(float),
-                "subproject_name": Column(str),
-                "subproject_status": Column(str),
-                "project_estimate": Column(int),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": FDU_EXPENSES,
-        "table": "fdu_expenses_quarterly",
-        "date_field": False,
-        "boto3": True,
-        "field_maps": {
-            "Fund": "fund",
-            "Department": "department",
-            "Fiscal Quarter@Name": "fiscal_quarter",
-            "Fiscal Quarter@Fiscal Year": "fiscal_year",
-            "Subproject@Number": "subproject_number",
-            "Subproject@Name": "subproject_name",
-            "Unit@Unit Code": "unit_code",
-            "Unit@Long Name": "unit_long_name",
-            "Fiscal Month-Fiscal Year": "month-year",
-            "Expenses": "expenses",
-        },
-        "schema": DataFrameSchema(
-            {
-                "fund": Column(str),
-                "department": Column(int),
-                "fiscal_quarter": Column(str),
-                "fiscal_year": Column(int),
-                "subproject_number": Column(float),
-                "subproject_name": Column(str),
-                "unit_code": Column(str),
-                "unit_long_name": Column(str),
-                "month-year": Column(str),
-                "expenses": Column(float),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": FDU_METADATA,
-        "table": "fdu_metadata_quarterly",
-        "date_field": False,
-        "boto3": True,
-        "field_maps": {
-            "Subproject@Number": "subproject_number",
-            "Subproject@Name": "subproject_name",
-            "Department@Long Name": "department_long_name",
-            "Department@Dept": "department",
-            "Group (As-Is)@Code": "subprogram_code",
-            "Group (As-Is)@Long Name": "subprogram_long_name",
-            "Division (As-Is)@Code": "program_code",
-            "Division (As-Is)@Long Name": "program_long_name",
-            "Unit@Unit Code": "unit_code",
-            "Unit@Long Name": "unit_long_name",
-            "Appropriated": "appropriated",
-        },
-        "schema": DataFrameSchema(
-            {
-                "subproject_number": Column(float),
-                "subproject_name": Column(str),
-                "department_long_name": Column(str),
-                "department": Column(int),
-                "subprogram_code": Column(str),
-                "subprogram_long_name": Column(str),
-                "program_code": Column(str),
-                "program_long_name": Column(str),
-                "unit_code": Column(str),
-                "unit_long_name": Column(str),
-                "appropriated": Column(float),
             },
             strict=True,
         ),
@@ -437,33 +296,6 @@ CSVS = [
                 "funding_amount": Column(int),
                 "program_sort": Column(int),
                 "sub_program_sort": Column(int),
-            },
-            strict=True,
-        ),
-    },
-    {
-        "url": QUARTERLY_SPEND_PLAN,
-        "table": "quarterly_spend_plan",
-        "date_field": False,
-        "boto3": False,
-        "field_maps": {
-            "Department": "department",
-            "Unit": "unit_code",
-            "Unit Name": "unit_name",
-            "Fiscal Year": "fiscal_year",
-            "Quarter": "quarter",
-            "Month": "month",
-            "Spend Plan": "spend_plan",
-        },
-        "schema": DataFrameSchema(
-            {
-                "department": Column(int),
-                "unit_code": Column(str),
-                "unit_name": Column(str),
-                "fiscal_year": Column(int),
-                "quarter": Column(int),
-                "month": Column(str),
-                "spend_plan": Column(float),
             },
             strict=True,
         ),
