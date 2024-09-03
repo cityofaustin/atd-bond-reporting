@@ -80,6 +80,6 @@ The summary tables group the above data by month (`table_col`) for the selected 
 
 ## Deployment
 
-The provided Dockerfile will package this repo for deployment as an ETL in [Prefect](https://github.com/cityofaustin/atd-prefect). This image is pushed to our [dockerhub repo](https://hub.docker.com/r/atddocker/atd-bond-reporting). Prefect uses this Docker container and a set of commands to orchestrate this ETL.
+The provided Dockerfile will package this repo for deployment as an ETL in [airflow](https://github.com/cityofaustin/atd-airflow). This image is pushed to our [dockerhub repo](https://hub.docker.com/r/atddocker/atd-bond-reporting). Airflow uses this Docker container and a set of commands to orchestrate this ETL.
 
 This repo has CI that will re-build and push to dockerhub the `production` and `latest` tags when a PR has been merged into `main`.
