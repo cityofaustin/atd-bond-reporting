@@ -7,8 +7,7 @@ import argparse
 # Related third party imports
 import boto3
 from mstrio.connection import Connection
-from mstrio.report import Report
-import pandas as pd
+from mstrio.project_objects.report import Report
 
 BASE_URL = os.getenv("BASE_URL")
 MSTRO_USERNAME = os.getenv("MSTRO_USERNAME")
@@ -20,17 +19,16 @@ BUCKET = os.getenv("BUCKET")
 
 # Dict of: Report name: Report ID
 REPORTS = {
-    "2020 Bond Expenses Obligated": "39ED219649483E62CE430085EB2F48DE",
-    "All bonds Expenses Obligated": "6B0DE57644C7C9912AAAE48392873233",
-    "2020 FDUs with Subproject and Appropriation": "97DE7BEFEE4C93C18FE27199BBBA00BF",
-    "Subprojects with total Appropriation": "01EF933E6D4FA79501CF10AF39DD8163",
-    "Open Subprojects with Budget Estimate": "E2AC0ACEF944222D0039DA9FF07BA05C",
-    "FDU Expenses by Quarter": "39EAC86D2F43664777ED6C9DBA27B43B",
-    "2020 Division Group and Unit": "221FEFD57C4B215CCB6BE2BD8DEE8CA9",
+    "2020 Bond Expenses Obligated": "D6BC5BD13143FF3129F3318F589EBD51",
+    "All bonds Expenses Obligated": "077C066E6C4BF56B081F96A3E405D83C",
 }
 # To find report ID, go to the report in Microstrategy then:
 ## Go to Tools > Report Details Page or Document Details Page.
 ## Click Show Advanced Details button at the bottom
+
+# All microstrategy reports are stored in the DTS Folder located at:
+# Financial Service Analytics/Shared Reports/Other Departments/Transportation Shared Reports/Data & Technology Services Reports
+# https://coa-prod.cloud.microstrategy.com:443/MicroStrategy/servlet/mstrWeb?evt=2001&src=mstrWeb.shared.fbb.fb.2001&folderID=E8CDB3C06B4EBCE74341739C543B2687&Server=ENV-327524LAIO1USE1&Project=Financial%20Services%20Analytics&Port=39321&share=1
 # To view any of these reports in microstrategy (replace report_id):
 # https://coa-prod.cloud.microstrategy.com:443/MicroStrategy/servlet/mstrWeb?&src=4001&evt=4001&reportViewMode=1&reportID=report_id
 
@@ -61,7 +59,7 @@ def connect_to_AWS():
 # Downloads a report from microstrategy with a given report_id
 # returns it as a pandas dataframe
 def download_report(report_id, conn):
-    my_report = Report(connection=conn, report_id=report_id, parallel=False)
+    my_report = Report(conn, id=report_id, parallel=False)
     return my_report.to_dataframe()
 
 
